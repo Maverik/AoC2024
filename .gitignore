@@ -1,5 +1,7 @@
-Zig/.zig-cache/
-Zig/zig-out/
+**/.zig-cache/
+**/zig-out/
 .jj/
 **/.idea/
 **/.vs/
+**/[Bb]in/
+**/[Oo]bj/
