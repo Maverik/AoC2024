@@ -19,11 +19,16 @@ var data = await client.GetStringAsync("https://adventofcode.com/2024/day/1/inpu
 var parsedLists = data.Split('\n', StringSplitOptions.RemoveEmptyEntries)
     .Select(x => x.Split(' ', StringSplitOptions.RemoveEmptyEntries))
     .Select(x => (Left: int.Parse(x[0]), Right: int.Parse(x[1])))
-    .Aggregate((Lefts: Array.Empty<int>().AsEnumerable(), Rights: Array.Empty<int>().AsEnumerable()), (a, x) => (Lefts: a.Lefts.Append(x.Left), Rights: a.Rights.Append(x.Right)));
+    .Aggregate((Lefts: Enumerable.Empty<int>(), Rights: Enumerable.Empty<int>()), (a, x) => (Lefts: a.Lefts.Append(x.Left), Rights: a.Rights.Append(x.Right)));
     
-var distance = parsedLists.Lefts.OrderBy(x => x)
+parsedLists.Lefts.OrderBy(x => x)
     .Zip(parsedLists.Rights.OrderBy(x => x))
     .Select(x => x.First >= x.Second ? x.First - x.Second : x.Second - x.First)
-    .Sum();
+    .Sum()
+    .Dump("Distance");
 
-distance.Dump("Distance");
+//Part 2
+parsedLists.Lefts
+    .GroupJoin(parsedLists.Rights, x => x, x => x, (left,rights) => left * rights.Count())
+    .Sum()
+    .Dump("Similarity Score");
