@@ -1,0 +1,5 @@
+Zig/.zig-cache/
+Zig/zig-out/
+.jj/
+**/.idea/
+**/.vs/
