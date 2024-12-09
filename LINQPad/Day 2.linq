@@ -22,27 +22,58 @@ var reports = data.Split('\n', StringSplitOptions.RemoveEmptyEntries)
         .ToArray())
     .ToArray();
 
+//Part 1
 reports
-   .Select(level => level.Zip(level.Skip(1)))
-   .Select(x => x.Aggregate((SafeSoFar: true, Direction: 0), (state, levels) =>
-   {
-       if (!state.SafeSoFar) return state;
+    .Select(level => level.Zip(level.Skip(1)))
+    .Select(x => x.Aggregate((SafeSoFar: true, Direction: 0), (state, levels) =>
+    {
+        if (!state.SafeSoFar) return state;
 
-       var direction = (levels.First, levels.Second) switch
-       {
-           (var x, var y) when x > y => 2, //Descending enum flag
-           (var x, var y) when x < y => 1, //Ascending enum flag
-           _ => 0, //Equality or default enum flag
-       };
+        var direction = (levels.First, levels.Second) switch
+        {
+            (var x, var y) when x > y => 2, //Descending enum flag
+            (var x, var y) when x < y => 1, //Ascending enum flag
+            _ => 0, //Equality or default enum flag
+        };
 
-       var delta = levels.First >= levels.Second ? levels.First - levels.Second : levels.Second - levels.First;
+        var delta = levels.First >= levels.Second ? levels.First - levels.Second : levels.Second - levels.First;
 
-       var safeSoFar = state.SafeSoFar
-               && direction is not 0
-               && (state.Direction is 0 || state.Direction == direction)
-               && delta is > 0 and < 4;
+        var safeSoFar = state.SafeSoFar
+                && direction is not 0
+                && (state.Direction is 0 || state.Direction == direction)
+                && delta is > 0 and < 4;
 
-       return (SafeSoFar: safeSoFar, Direction: direction);
-   }).SafeSoFar)
-   .Count(x => x)
-   .Dump("Safe reports");
+        return (SafeSoFar: safeSoFar, Direction: direction);
+    }).SafeSoFar)
+    .Count(x => x)
+    .Dump("Safe reports");
+
+//Part 2
+reports
+    .Select(report => Enumerable
+        .Range(0, report.Length)
+        .Select(i => report[..i].Concat(report[(i + 1)..])) //create dampned sequences
+        .Select(level => level.Zip(level.Skip(1)))
+        .Select(x => x.Aggregate((SafeSoFar: true, Direction: 0), (state, levels) =>
+        {
+            if (!state.SafeSoFar) return state;
+
+            var direction = (levels.First, levels.Second) switch
+            {
+                (var x, var y) when x > y => 2, //Descending enum flag
+                (var x, var y) when x < y => 1, //Ascending enum flag
+                _ => 0, //Equality or default enum flag
+            };
+
+            var delta = levels.First >= levels.Second ? levels.First - levels.Second : levels.Second - levels.First;
+
+            var safeSoFar = state.SafeSoFar
+                    && direction is not 0
+                    && (state.Direction is 0 || state.Direction == direction)
+                    && delta is > 0 and < 4;
+
+            return (SafeSoFar: safeSoFar, Direction: direction);
+        }).SafeSoFar)
+        .Any(x => x))
+    .Count(x => x)
+    .Dump("Safe reports with dampner");
