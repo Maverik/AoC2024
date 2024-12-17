@@ -19,12 +19,17 @@ async Task Main()
     client.DefaultRequestHeaders.Add("Cookie", cookieHeaderValue);
 
     string data = await client.GetStringAsync("https://adventofcode.com/2024/day/4/input");
-    
-    const string lookupWord = "XMAS";
 
     var input = data.Replace("\r\n", "\n").Append('\n').ToArray();
     var strideLength = Array.IndexOf(input, '\n') + 1;
 
+    Part1(input, strideLength);
+    Part2(input, strideLength);
+}
+
+static void Part1(ReadOnlySpan<char> input, in int strideLength)
+{
+    ReadOnlySpan<char> lookupWord = "XMAS";
     var traceCount = 0;
     //var trace = new List<(Direction Direction, int Index, string Substring)>();
 
@@ -33,7 +38,7 @@ async Task Main()
         var currentChar = input[i];
 
         //We're assuming we match on character case
-        //If it's not the starting character of what we're looking for keep moving
+        //If it's not the pivoting character of what we're looking for keep moving
         if (currentChar != lookupWord[0]) continue;
 
         //alias the index for lambda capture
@@ -58,6 +63,60 @@ async Task Main()
     //trace.Dump($"{lookupWord}");
     traceCount.Dump($"{lookupWord} Count");
 }
+
+
+static void Part2(ReadOnlySpan<char> input, in int strideLength)
+{
+    ReadOnlySpan<char> lookupWord = "MAS";
+    
+    var matches = new List<(Direction Direction, int Index, string Substring)>();
+
+    for (var i = 0; i < input.Length; i++)
+    {
+        var currentChar = input[i];
+
+        //We're assuming we match on character case
+        //If it's not the pivoting character of what we're looking for keep moving
+        if (currentChar != lookupWord[1]) continue;
+
+        //alias the index for lambda capture
+        var pivotIndex = i;
+
+        foreach (var direction in new[] { Direction.ToTopRight, Direction.ToBottomRight, Direction.ToBottomLeft, Direction.ToTopLeft })
+        {
+            //the wordlength is 2 as we're pivoting from midpoint so AS or AM
+            var indices = DirectionalIndicesFromPivot(direction, pivotIndex, 2, strideLength);
+
+            if (indices.ContainsAnyExceptInRange(0, input.Length - 1)) continue;
+
+            var indexedLookup = GetSubstringFromIndices(input, indices);
+
+            //Are we looking at AM or AS? if so, record it.
+            if (indexedLookup[1].Equals(lookupWord[0]) || indexedLookup[1].Equals(lookupWord[2]))
+                matches.Add((direction, i, indexedLookup.ToString()));
+        }
+    }
+
+    matches
+        //The magic happens - Find all the pairs that share the pivot in diagonal opposites
+        .Join(matches, x => (x.Index, x.Direction), x => (x.Index, FlipDiagonal(x.Direction)), (x, y) => (x.Index, Match: y.Substring[1] + x.Substring))
+        .GroupBy(x => x.Index)
+        //to form an X we need exactly 2 legs ending in AM & 2 in AS with their counters flipped
+        //Since we only look for 4 diagnoal directions, it'll never exceed 4
+        //and less means we don't have enoguh legs
+        .Count(x => x.Count(xx => xx.Match == "MAS") == 2 && x.Count(xx => xx.Match == "SAM") == 2)
+        .Dump("X-MAS Count");
+}
+
+static Direction FlipDiagonal(Direction direction) => direction switch
+{
+    Direction.ToBottomLeft => Direction.ToTopRight,
+    Direction.ToTopRight => Direction.ToBottomLeft,
+    Direction.ToBottomRight => Direction.ToTopLeft,
+    Direction.ToTopLeft => Direction.ToBottomRight,
+
+    _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
+};
 
 static ReadOnlySpan<char> GetSubstringFromIndices(ReadOnlySpan<char> input, ReadOnlySpan<int> indices)
 {
