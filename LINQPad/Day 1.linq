@@ -5,7 +5,7 @@
 </Query>
 
 //Skipping the oauth flow. Do it in browser and pull the full cookie into your environment variable as below
-var cookieHeaderValue = Environment.GetEnvironmentVariable("AoC2004-FullCookie");
+var cookieHeaderValue = Environment.GetEnvironmentVariable("AoC2024-FullCookie");
 
 if(string.IsNullOrWhiteSpace(cookieHeaderValue))
 	"Can't continue unless you're logged in through your cookie".Dump("Error");

@@ -10,7 +10,7 @@ pub fn part1() !void {
 
     //Must define an environment variable with the full cookie value from AoC post login (so it should have both ru & session values in it)
     //The environment variable muct be named "AoC2004-FullCookie"
-    const cookieHeaderValue = std.process.getEnvVarOwned(allocator, "AoC2004-FullCookie") catch |err| switch (err) {
+    const cookieHeaderValue = std.process.getEnvVarOwned(allocator, "AoC2024-FullCookie") catch |err| switch (err) {
         error.EnvironmentVariableNotFound => @panic("Cannot continue without environment variable AoC2004-FullCookie. This should be the full cookie value from AoC authenticated session include ru & session values"),
         error.OutOfMemory, error.InvalidWtf8 => @panic("This was not supposed to happen..."),
     };
