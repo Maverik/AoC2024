@@ -19,7 +19,7 @@ async Task Main()
     client.DefaultRequestHeaders.Add("Cookie", cookieHeaderValue);
 
 
-    string data = await client.GetStringAsync("https://adventofcode.com/2024/day/3/input");
+    string data = await Util.CacheAsync(async () => await client.GetStringAsync("https://adventofcode.com/2024/day/3/input"));
 
     //Part 1
     parsedDotProduct(data).Dump("Multiplications Summed");

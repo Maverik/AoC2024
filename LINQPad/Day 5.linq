@@ -22,7 +22,7 @@ public static class Program
 
         client.DefaultRequestHeaders.Add("Cookie", cookieHeaderValue);
 
-        var data = await client.GetStringAsync("https://adventofcode.com/2024/day/5/input");
+        var data = await Util.CacheAsync(async () => await client.GetStringAsync("https://adventofcode.com/2024/day/5/input"));
 
         var priorities = new Dictionary<byte, PriorityNumber<byte>>();
 

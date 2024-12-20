@@ -14,7 +14,7 @@ using var client = new HttpClient();
 
 client.DefaultRequestHeaders.Add("Cookie", cookieHeaderValue);
 
-var data = await client.GetStringAsync("https://adventofcode.com/2024/day/1/input");
+var data = await Util.CacheAsync(async () => await client.GetStringAsync("https://adventofcode.com/2024/day/1/input"));
 
 var parsedLists = data.Split('\n', StringSplitOptions.RemoveEmptyEntries)
     .Select(x => x.Split(' ', StringSplitOptions.RemoveEmptyEntries))

@@ -18,7 +18,7 @@ async Task Main()
 
     client.DefaultRequestHeaders.Add("Cookie", cookieHeaderValue);
 
-    string data = await client.GetStringAsync("https://adventofcode.com/2024/day/4/input");
+    string data = await Util.CacheAsync(async () => await client.GetStringAsync("https://adventofcode.com/2024/day/4/input"));
 
     var input = data.Replace("\r\n", "\n").Append('\n').ToArray();
     var strideLength = Array.IndexOf(input, '\n') + 1;
