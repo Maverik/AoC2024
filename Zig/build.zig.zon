@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: CC-BY-NC-SA-4.0
+// SPDX-FileCopyrightText: ©️ 2024 Maverik <http://github.com/Maverik>
+
 .{
     .name = "AoC2004",
     .version = "0.1.0",

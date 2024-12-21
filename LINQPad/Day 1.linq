@@ -4,6 +4,11 @@
   <RuntimeVersion>9.0</RuntimeVersion>
 </Query>
 
+/*
+    SPDX-License-Identifier: CC-BY-NC-SA-4.0
+    SPDX-FileCopyrightText: ©️ 2024 Maverik <http://github.com/Maverik>
+*/
+
 //Skipping the oauth flow. Do it in browser and pull the full cookie into your environment variable as below
 var cookieHeaderValue = Environment.GetEnvironmentVariable("AoC2024-FullCookie");
 

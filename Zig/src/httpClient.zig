@@ -1,4 +1,7 @@
-﻿const std = @import("std");
+﻿// SPDX-License-Identifier: CC-BY-NC-SA-4.0
+// SPDX-FileCopyrightText: ©️ 2024 Maverik <http://github.com/Maverik>
+
+const std = @import("std");
 const Allocator = std.mem.Allocator;
 
 pub fn getAlloc(args: struct { allocator: Allocator, url: []const u8, mimeType: []const u8 = "application/json", cookieHeader: ?std.http.Header = null }) ![]u8 {

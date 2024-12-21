@@ -6,6 +6,11 @@
   <RuntimeVersion>9.0</RuntimeVersion>
 </Query>
 
+/*
+    SPDX-License-Identifier: CC-BY-NC-SA-4.0
+    SPDX-FileCopyrightText: ©️ 2024 Maverik <http://github.com/Maverik>
+*/
+
 public static class Program
 {
     public static async Task Main()
@@ -65,10 +70,7 @@ public static class Program
 
         }
 
-        Thread.Sleep(10000);
-
         await Part1(map, guardPosition);
-
     }
 
     static async Task Part1(MapMarker[,] map, (byte X, byte Y) guardPosition)

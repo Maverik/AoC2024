@@ -1,12 +1,17 @@
 <Query Kind="Program">
   <Namespace>System.Buffers</Namespace>
-  <Namespace>System.Net.Http</Namespace>
-  <Namespace>System.Threading.Tasks</Namespace>
-  <Namespace>System.Numerics</Namespace>
   <Namespace>System.Diagnostics.CodeAnalysis</Namespace>
+  <Namespace>System.Net.Http</Namespace>
+  <Namespace>System.Numerics</Namespace>
+  <Namespace>System.Threading.Tasks</Namespace>
   <AutoDumpHeading>true</AutoDumpHeading>
   <RuntimeVersion>9.0</RuntimeVersion>
 </Query>
+
+/*
+    SPDX-License-Identifier: CC-BY-NC-SA-4.0
+    SPDX-FileCopyrightText: ©️ 2024 Maverik <http://github.com/Maverik>
+*/
 
 public static class Program
 {
