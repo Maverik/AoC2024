@@ -21,6 +21,12 @@ This is my first time writing Zig so the code is a learning journey (and a very 
 
 &nbsp;
 
+## 🎈 Fun while solving challenges
+
+https://github.com/user-attachments/assets/d764a7c0-f59a-4f60-a860-883d80a58e29
+
+&nbsp;
+
 ## ⚖️ License & Attribution
 
 <p xmlns:cc="http://creativecommons.org/ns#" ><a rel="cc:attributionURL" href="https://github.com/Maverik/AoC2024">This work</a> by <a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://github.com/Maverik">Maverik</a> is licensed under <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">CC BY-NC-SA 4.0 <img alt="CC" height="22px" style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img alt="BY" height="22px" style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><img alt="NC" height="22px" style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1"><img alt="SA" height="22px" style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1"></a></p>
