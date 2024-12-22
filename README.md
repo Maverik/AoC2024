@@ -1,7 +1,7 @@
----
-# SPDX-License-Identifier: CC-BY-NC-SA-4.0
-# SPDX-FileCopyrightText: ©️ 2024 Maverik <http://github.com/Maverik>
----
+<!--
+    SPDX-License-Identifier: CC-BY-NC-SA-4.0
+    SPDX-FileCopyrightText: ©️ 2024 Maverik <http://github.com/Maverik>
+-->
 
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-orange.svg?style=for-the-badge&logo=creativecommons&link=https://creativecommons.org/licenses/by-nc-sa/4.0/)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
 
