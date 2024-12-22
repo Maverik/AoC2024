@@ -2,7 +2,6 @@
   <Namespace>System.Buffers</Namespace>
   <Namespace>System.Net.Http</Namespace>
   <Namespace>System.Threading.Tasks</Namespace>
-  <AutoDumpHeading>true</AutoDumpHeading>
   <RuntimeVersion>9.0</RuntimeVersion>
 </Query>
 
@@ -13,21 +12,11 @@
 
 public static class Program
 {
-    public static async Task Main()
+    public static void Main()
     {
-        //Skipping the oauth flow. Do it in browser and pull the full cookie into your environment variable as below
-        var cookieHeaderValue = Environment.GetEnvironmentVariable("AoC2024-FullCookie");
+        var data = GetInput();
 
-        if (string.IsNullOrWhiteSpace(cookieHeaderValue))
-            "Can't continue unless you're logged in through your cookie".Dump("Error");
-
-        using var client = new HttpClient();
-
-        client.DefaultRequestHeaders.Add("Cookie", cookieHeaderValue);
-
-        var data = await Util.CacheAsync(async () => await client.GetStringAsync("https://adventofcode.com/2024/day/6/input"));
-
-        (byte X, byte Y) guardPosition = (0, 0);
+        (int X, int Y) guardPosition = (0, 0);
 
         using var reader = new StringReader(data);
         var row = reader.ReadLine();
@@ -35,7 +24,7 @@ public static class Program
         Debug.Assert(row is not null);
 
         //we're going to add an edge on each side of the map so +2 & +2
-        var stride = (byte)(row.Length + 2);
+        var stride = (row.Length + 2);
 
         var map = new MapMarker[stride, stride];
 
@@ -52,9 +41,9 @@ public static class Program
             map[i, stride - 1] = MapMarker.Edge;
         }
 
-        for (byte y = 1; row is { Length: > 0 }; row = reader.ReadLine(), y++)
+        for (int y = 1; row is { Length: > 0 }; row = reader.ReadLine(), y++)
         {
-            for (byte x = 0; x < row.Length; x++)
+            for (int x = 0; x < row.Length; x++)
             {
                 switch (row[x])
                 {
@@ -62,26 +51,24 @@ public static class Program
                         map[y, x + 1] = MapMarker.Obstacle;
                         break;
                     case guardMarker:
-                        guardPosition = ((byte)(x + 1), y);
-                        map[y, x + 1] = MapMarker.Guard | MapMarker.GuardMovingTop;
+                        guardPosition = (x + 1, y);
+                        map[y, x + 1] = MapMarker.Guard | MapMarker.TraversingTop;
                         break;
                 }
             }
 
         }
 
-        await Part1(map, guardPosition);
-    }
-
-    static async Task Part1(MapMarker[,] map, (byte X, byte Y) guardPosition)
-    {
         // lets get a bit fancy with our rendering!
         var mapContainer = new DumpContainer(map).Dump();
-        
+
         //this 1 accounts for edge node we'll run into at the end (it needs traversal but we stop 1 short)
-        short traversalCount = 1;
+        ushort traversalCount = 1;
         var traversalCountContainer = new DumpContainer(traversalCount).Dump("Traversal Count");
-        
+        var loopCandidate = new List<(int X, int Y)>();
+
+        //Part 1
+
         MapMarker marker;
 
         do
@@ -93,45 +80,47 @@ public static class Program
 
             switch (direction)
             {
-                case MapMarker.GuardMovingTop when (MapMarker)((byte)map[guardPosition.Y - 1, guardPosition.X] & 0x0F) is MapMarker.Free or MapMarker.Edge or MapMarker.Traversed:
-                    guardPosition.Y = (byte)(guardPosition.Y - 1);
+                case MapMarker.TraversingTop when MarkerType(map[guardPosition.Y - 1, guardPosition.X]) is MapMarker.Free or MapMarker.Edge or MapMarker.Traversed:
+                    guardPosition.Y--;
 
                     break;
-                case MapMarker.GuardMovingRight when (MapMarker)((byte)map[guardPosition.Y, guardPosition.X + 1] & 0x0F) is MapMarker.Free or MapMarker.Edge or MapMarker.Traversed:
-                    guardPosition.X = (byte)(guardPosition.X + 1);
+                case MapMarker.TraversingRight when MarkerType(map[guardPosition.Y, guardPosition.X + 1]) is MapMarker.Free or MapMarker.Edge or MapMarker.Traversed:
+                    guardPosition.X++;
 
                     break;
-                case MapMarker.GuardMovingBottom when (MapMarker)((byte)map[guardPosition.Y + 1, guardPosition.X] & 0x0F) is MapMarker.Free or MapMarker.Edge or MapMarker.Traversed:
-                    guardPosition.Y = (byte)(guardPosition.Y + 1);
+                case MapMarker.TraversingBottom when MarkerType(map[guardPosition.Y + 1, guardPosition.X]) is MapMarker.Free or MapMarker.Edge or MapMarker.Traversed:
+                    guardPosition.Y++;
 
                     break;
-                case MapMarker.GuardMovingLeft when (MapMarker)((byte)map[guardPosition.Y, guardPosition.X - 1] & 0x0F) is MapMarker.Free or MapMarker.Edge or MapMarker.Traversed:
-                    guardPosition.X = (byte)(guardPosition.X - 1);
+                case MapMarker.TraversingLeft when MarkerType(map[guardPosition.Y, guardPosition.X - 1]) is MapMarker.Free or MapMarker.Edge or MapMarker.Traversed:
+                    guardPosition.X--;
 
                     break;
 
-                case MapMarker.GuardMovingTop:
-                case MapMarker.GuardMovingRight:
-                case MapMarker.GuardMovingBottom:
-                case MapMarker.GuardMovingLeft:
+                case MapMarker.TraversingTop:
+                case MapMarker.TraversingRight:
+                case MapMarker.TraversingBottom:
+                case MapMarker.TraversingLeft:
                     map[guardPosition.Y, guardPosition.X] = MapMarker.Guard | direction switch
                     {
-                        MapMarker.GuardMovingTop => MapMarker.GuardMovingRight,
-                        MapMarker.GuardMovingRight => MapMarker.GuardMovingBottom,
-                        MapMarker.GuardMovingBottom => MapMarker.GuardMovingLeft,
-                        MapMarker.GuardMovingLeft => MapMarker.GuardMovingTop,
-                        _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, $"Unexpected guard direction {direction}")
+                        MapMarker.TraversingTop => MapMarker.TraversingRight,
+                        MapMarker.TraversingRight => MapMarker.TraversingBottom,
+                        MapMarker.TraversingBottom => MapMarker.TraversingLeft,
+                        MapMarker.TraversingLeft => MapMarker.TraversingTop,
+                        _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, "Unexpected traversal direction " + direction)
                     };
                     break;
 
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(direction), direction, $"Unexpected guard direction {direction}");
+                    throw new ArgumentOutOfRangeException(nameof(direction), direction, "Unexpected guard direction " + direction);
             }
 
             if (guardPosition != lastGuardPosition && map[guardPosition.Y, guardPosition.X] != MapMarker.Edge)
-            {                
-                if(!map[guardPosition.Y, guardPosition.X].HasFlag(MapMarker.Traversed))
+            {
+                if (MarkerType(map[guardPosition.Y, guardPosition.X]) is not MapMarker.Traversed)
                     traversalCount++;
+                else
+                    loopCandidate.Add(guardPosition);
 
                 map[lastGuardPosition.Y, lastGuardPosition.X] = MapMarker.Traversed | direction;
                 map[guardPosition.Y, guardPosition.X] = MapMarker.Guard | direction;
@@ -140,22 +129,64 @@ public static class Program
             //If you want to watch it all animate - uncomment the following and grab your coffee!
             //await Task.Delay(48).ConfigureAwait(false);
             //mapContainer.UpdateContent(map);
-            
+
             //traversal would be one higher at the end because of the edge node.
             traversalCountContainer.UpdateContent(traversalCount);
-            
-        } while (map[guardPosition.Y, guardPosition.X] != MapMarker.Edge);
-        
+
+        } while (map[guardPosition.Y, guardPosition.X] is not MapMarker.Edge);
+
         mapContainer.UpdateContent(map);
         traversalCountContainer.UpdateContent(traversalCount);
+
+
+        loopCandidate.Dump();
+
+        //Part 2
     }
+
+    internal static MapMarker MarkerType(MapMarker value) => (MapMarker)((byte)value & 0x0F);
+    internal static MapMarker TraversalDirection(MapMarker value) => (MapMarker)((byte)value & 0xF0);
 
     const char obstacleMarker = '#';
     const char guardMarker = '^';
+
+    //Packed structure - lower 4 bits for markers, upper 4 bits for direction a guard is facing
+
+
+    public static string GetInput()
+    {
+        var challengeDay = Util.CurrentQuery.Name;
+        var dayNumber = challengeDay[^1];
+
+        //Skipping the oauth flow. Do it in browser and pull the full cookie into your environment variable as below
+        var cookieHeaderValue = Environment.GetEnvironmentVariable("AoC2024-FullCookie");
+
+        if (string.IsNullOrWhiteSpace(cookieHeaderValue))
+            "Can't continue unless you're logged in through your cookie".Dump("Error");
+
+        using var client = new HttpClient();
+
+        client.DefaultRequestHeaders.Add("Cookie", cookieHeaderValue);
+
+        return Util.Cache(() => client.GetStringAsync("https://adventofcode.com/2024/day/" + dayNumber + "/input").GetAwaiter().GetResult(), challengeDay, TimeSpan.FromDays(1));
+    }
+
+    internal enum MapMarker : byte
+    {
+        Free = 0,
+        Obstacle = 1,
+        Guard = 2,
+        Traversed = 3,
+        Edge = 4,
+
+        TraversingTop = 0 << 4,
+        TraversingRight = 1 << 4,
+        TraversingBottom = 2 << 4,
+        TraversingLeft = 3 << 4,
+    }
 }
 
-
-static object ToDump(object input)
+internal static object ToDump(object input)
 {
     Util.HtmlHead.AddStyles(
         """
@@ -172,37 +203,22 @@ static object ToDump(object input)
 
     return input switch
     {
-        MapMarker marker => (marker & (MapMarker)0x0F) switch
+        Program.MapMarker marker => Program.MarkerType(marker) switch
         {
-            MapMarker.Free => string.Empty,
-            MapMarker.Edge => Util.WithStyle("❌", "font-size: 2ch; color: #FFFFFF80"),
-            MapMarker.Obstacle => Util.WithStyle("🚩", "font-size: 2ch; color: #FFFFFFA0"),
-            MapMarker.Traversed => (marker & (MapMarker)0xF0) switch
+            Program.MapMarker.Free => string.Empty,
+            Program.MapMarker.Edge => Util.WithStyle("❌", "font-size: 2ch; color: #FFFFFF80"),
+            Program.MapMarker.Obstacle => Util.WithStyle("🚩", "font-size: 2ch; color: #FFFFFFA0"),
+            Program.MapMarker.Traversed => Program.TraversalDirection(marker) switch
             {
-                MapMarker.GuardMovingTop => Util.WithStyle("^", "color: #016064"),
-                MapMarker.GuardMovingRight => Util.WithStyle(">️", "color: #63c5da"),
-                MapMarker.GuardMovingBottom => Util.WithStyle("V", "color: #1f456E"),
-                MapMarker.GuardMovingLeft => Util.WithStyle("<️", "color: #0492c2"),
+                Program.MapMarker.TraversingTop => Util.WithStyle("^", "color: #016064"),
+                Program.MapMarker.TraversingRight => Util.WithStyle(">️", "color: #63c5da"),
+                Program.MapMarker.TraversingBottom => Util.WithStyle("V", "color: #1f456E"),
+                Program.MapMarker.TraversingLeft => Util.WithStyle("<️", "color: #0492c2"),
                 var x => x
             },
-            MapMarker.Guard => Util.WithStyle("👮", "font-size: 2ch;"),
+            Program.MapMarker.Guard => Util.WithStyle("👮", "font-size: 2ch;"),
             var x => x
         },
         var x => x
     };
-}
-
-//Packed structure - lower 4 bits for markers, upper 4 bits for direction a guard is facing
-enum MapMarker : byte
-{
-    Free = 0,
-    Obstacle = 1,
-    Guard = 2,
-    Traversed = 3,
-    Edge = 4,
-
-    GuardMovingTop = 0 << 4,
-    GuardMovingRight = 1 << 4,
-    GuardMovingBottom = 2 << 4,
-    GuardMovingLeft = 3 << 4,
 }

@@ -1,4 +1,4 @@
-<Query Kind="Statements">
+<Query Kind="Program">
   <Namespace>System.Net.Http</Namespace>
   <AutoDumpHeading>true</AutoDumpHeading>
   <RuntimeVersion>9.0</RuntimeVersion>
@@ -9,31 +9,45 @@
     SPDX-FileCopyrightText: ©️ 2024 Maverik <http://github.com/Maverik>
 */
 
-//Skipping the oauth flow. Do it in browser and pull the full cookie into your environment variable as below
-var cookieHeaderValue = Environment.GetEnvironmentVariable("AoC2024-FullCookie");
+public static class Program
+{
+    public static void Main()
+    {
+        var data = GetInput();
 
-if(string.IsNullOrWhiteSpace(cookieHeaderValue))
-	"Can't continue unless you're logged in through your cookie".Dump("Error");
+        var parsedLists = data.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Select(x => x.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+            .Select(x => (Left: int.Parse(x[0]), Right: int.Parse(x[1])))
+            .Aggregate((Lefts: Enumerable.Empty<int>(), Rights: Enumerable.Empty<int>()), (a, x) => (Lefts: a.Lefts.Append(x.Left), Rights: a.Rights.Append(x.Right)));
 
-using var client = new HttpClient();
+        parsedLists.Lefts.OrderBy(x => x)
+            .Zip(parsedLists.Rights.OrderBy(x => x))
+            .Select(x => x.First >= x.Second ? x.First - x.Second : x.Second - x.First)
+            .Sum()
+            .Dump("Distance");
 
-client.DefaultRequestHeaders.Add("Cookie", cookieHeaderValue);
+        //Part 2
+        parsedLists.Lefts
+            .GroupJoin(parsedLists.Rights, x => x, x => x, (left, rights) => left * rights.Count())
+            .Sum()
+            .Dump("Similarity Score");
+    }
 
-var data = await Util.CacheAsync(async () => await client.GetStringAsync("https://adventofcode.com/2024/day/1/input"));
+    public static string GetInput()
+    {
+        var challengeDay = Util.CurrentQuery.Name;
+        var dayNumber = challengeDay[^1];
 
-var parsedLists = data.Split('\n', StringSplitOptions.RemoveEmptyEntries)
-    .Select(x => x.Split(' ', StringSplitOptions.RemoveEmptyEntries))
-    .Select(x => (Left: int.Parse(x[0]), Right: int.Parse(x[1])))
-    .Aggregate((Lefts: Enumerable.Empty<int>(), Rights: Enumerable.Empty<int>()), (a, x) => (Lefts: a.Lefts.Append(x.Left), Rights: a.Rights.Append(x.Right)));
-    
-parsedLists.Lefts.OrderBy(x => x)
-    .Zip(parsedLists.Rights.OrderBy(x => x))
-    .Select(x => x.First >= x.Second ? x.First - x.Second : x.Second - x.First)
-    .Sum()
-    .Dump("Distance");
+        //Skipping the oauth flow. Do it in browser and pull the full cookie into your environment variable as below
+        var cookieHeaderValue = Environment.GetEnvironmentVariable("AoC2024-FullCookie");
 
-//Part 2
-parsedLists.Lefts
-    .GroupJoin(parsedLists.Rights, x => x, x => x, (left,rights) => left * rights.Count())
-    .Sum()
-    .Dump("Similarity Score");
+        if (string.IsNullOrWhiteSpace(cookieHeaderValue))
+            "Can't continue unless you're logged in through your cookie".Dump("Error");
+
+        using var client = new HttpClient();
+
+        client.DefaultRequestHeaders.Add("Cookie", cookieHeaderValue);
+
+        return Util.Cache(() => client.GetStringAsync("https://adventofcode.com/2024/day/" + dayNumber + "/input").GetAwaiter().GetResult(), challengeDay, TimeSpan.FromDays(1));
+    }
+}

@@ -3,7 +3,6 @@
   <Namespace>System.Diagnostics.CodeAnalysis</Namespace>
   <Namespace>System.Net.Http</Namespace>
   <Namespace>System.Numerics</Namespace>
-  <Namespace>System.Threading.Tasks</Namespace>
   <AutoDumpHeading>true</AutoDumpHeading>
   <RuntimeVersion>9.0</RuntimeVersion>
 </Query>
@@ -15,19 +14,9 @@
 
 public static class Program
 {
-    public static async Task Main()
+    public static void Main()
     {
-        //Skipping the oauth flow. Do it in browser and pull the full cookie into your environment variable as below
-        var cookieHeaderValue = Environment.GetEnvironmentVariable("AoC2024-FullCookie");
-
-        if (string.IsNullOrWhiteSpace(cookieHeaderValue))
-            "Can't continue unless you're logged in through your cookie".Dump("Error");
-
-        using var client = new HttpClient();
-
-        client.DefaultRequestHeaders.Add("Cookie", cookieHeaderValue);
-
-        var data = await Util.CacheAsync(async () => await client.GetStringAsync("https://adventofcode.com/2024/day/5/input"));
+        var data = GetInput();
 
         var priorities = new Dictionary<byte, PriorityNumber<byte>>();
 
@@ -70,78 +59,96 @@ public static class Program
         middleSum.Dump("Part 1");
         correctedMiddleSum.Dump("Part 2");
     }
-}
 
-public record struct PriorityNumber<T>() : IParsable<PriorityNumber<T>> where T : struct, INumber<T>
-{
-    public T Number;
-
-    public SortedSet<T> Followers = [];
-
-    public PriorityNumber<T> Merge(PriorityNumber<T> other)
+    public record struct PriorityNumber<T>() : IParsable<PriorityNumber<T>> where T : struct, INumber<T>
     {
-        if (Number.Equals(other.Number))
-            Followers.UnionWith(other.Followers);
+        public T Number;
 
-        return this;
-    }
+        public SortedSet<T> Followers = [];
 
-    #region IParsable<T>
+        public PriorityNumber<T> Merge(PriorityNumber<T> other)
+        {
+            if (Number.Equals(other.Number))
+                Followers.UnionWith(other.Followers);
 
-    public static PriorityNumber<T> Parse(string s) => Parse(s, null);
+            return this;
+        }
 
-    public static PriorityNumber<T> Parse(string s, IFormatProvider? provider) => TryParse(s, provider, out var result) ? result : throw new InvalidOperationException($"Cannot parse {s} as a valid string");
+        #region IParsable<T>
 
-    public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, out PriorityNumber<T> result)
-    {
-        if (s is not null) return TryParse(s.AsSpan(), provider, out result);
+        public static PriorityNumber<T> Parse(string s) => Parse(s, null);
 
-        result = default;
+        public static PriorityNumber<T> Parse(string s, IFormatProvider? provider) => TryParse(s, provider, out var result) ? result : throw new InvalidOperationException($"Cannot parse {s} as a valid string");
 
-        return false;
-    }
+        public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, out PriorityNumber<T> result)
+        {
+            if (s is not null) return TryParse(s.AsSpan(), provider, out result);
 
-    public static bool TryParse(ReadOnlySpan<char> input, IFormatProvider? provider, out PriorityNumber<T> result)
-    {
-        result = new();
+            result = default;
 
-        var separatorIndex = input.IndexOf('|');
-
-        if (separatorIndex < 1)
-            return T.TryParse(input, provider, out result.Number);
-
-        if (separatorIndex != input.LastIndexOf('|') || separatorIndex + 1 == input.Length)
             return false;
+        }
 
-        if (!T.TryParse(input[..separatorIndex], provider, out var number) || !T.TryParse(input[(separatorIndex + 1)..], provider, out var before))
-            return false;
+        public static bool TryParse(ReadOnlySpan<char> input, IFormatProvider? provider, out PriorityNumber<T> result)
+        {
+            result = new();
 
-        result.Number = number;
-        result.Followers.Add(before);
+            var separatorIndex = input.IndexOf('|');
 
-        return true;
+            if (separatorIndex < 1)
+                return T.TryParse(input, provider, out result.Number);
+
+            if (separatorIndex != input.LastIndexOf('|') || separatorIndex + 1 == input.Length)
+                return false;
+
+            if (!T.TryParse(input[..separatorIndex], provider, out var number) || !T.TryParse(input[(separatorIndex + 1)..], provider, out var before))
+                return false;
+
+            result.Number = number;
+            result.Followers.Add(before);
+
+            return true;
+        }
+
+        #endregion
+
+        public static implicit operator PriorityNumber<T>(T number) => new() { Number = number };
+
+        public static explicit operator T(PriorityNumber<T> number) => number.Number;
     }
 
-    #endregion
-
-    public static implicit operator PriorityNumber<T>(T number) => new() { Number = number };
-
-    public static explicit operator T(PriorityNumber<T> number) => number.Number;
-}
-
-public struct PriorityUpdateComparer<T> : IComparer<PriorityNumber<T>> where T : struct, INumber<T>
-{
-    public static readonly PriorityUpdateComparer<T> Default = new();
-
-    public int Compare(PriorityNumber<T> x, PriorityNumber<T> y)
+    public struct PriorityUpdateComparer<T> : IComparer<PriorityNumber<T>> where T : struct, INumber<T>
     {
-        if (x.Number.Equals(y.Number)) return 0;
-        //if we're a number in the Before list of the other number, then we have to come after that number.
-        else if (y.Followers.Contains(x.Number)) return 1;
-        //if they're a number in our before list, then we must come before them.
-        else if (x.Followers.Contains(y.Number)) return -1;
+        public static readonly PriorityUpdateComparer<T> Default = new();
 
-        //there is no priority set at this point, so we're going to return equal for sorting purposes.
-        return 0;
+        public int Compare(PriorityNumber<T> x, PriorityNumber<T> y)
+        {
+            if (x.Number.Equals(y.Number)) return 0;
+            //if we're a number in the Before list of the other number, then we have to come after that number.
+            else if (y.Followers.Contains(x.Number)) return 1;
+            //if they're a number in our before list, then we must come before them.
+            else if (x.Followers.Contains(y.Number)) return -1;
+
+            //there is no priority set at this point, so we're going to return equal for sorting purposes.
+            return 0;
+        }
+    }
+
+    public static string GetInput()
+    {
+        var challengeDay = Util.CurrentQuery.Name;
+        var dayNumber = challengeDay[^1];
+
+        //Skipping the oauth flow. Do it in browser and pull the full cookie into your environment variable as below
+        var cookieHeaderValue = Environment.GetEnvironmentVariable("AoC2024-FullCookie");
+
+        if (string.IsNullOrWhiteSpace(cookieHeaderValue))
+            "Can't continue unless you're logged in through your cookie".Dump("Error");
+
+        using var client = new HttpClient();
+
+        client.DefaultRequestHeaders.Add("Cookie", cookieHeaderValue);
+
+        return Util.Cache(() => client.GetStringAsync("https://adventofcode.com/2024/day/" + dayNumber + "/input").GetAwaiter().GetResult(), challengeDay, TimeSpan.FromDays(1));
     }
 }
