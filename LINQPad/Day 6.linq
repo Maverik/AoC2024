@@ -1,8 +1,7 @@
 <Query Kind="Program">
   <Namespace>System.Buffers</Namespace>
   <Namespace>System.Net.Http</Namespace>
-  <Namespace>System.Threading.Tasks</Namespace>
-  <RuntimeVersion>9.0</RuntimeVersion>
+  <RuntimeVersion>10.0.100-alpha.1.24622.1</RuntimeVersion>
 </Query>
 
 /*
@@ -10,11 +9,15 @@
     SPDX-FileCopyrightText: ©️ 2024 Maverik <http://github.com/Maverik>
 */
 
+#load ".\AoC2024"
+
 public static class Program
 {
     public static void Main()
     {
-        var data = GetInput();
+        var data = AoC2024.GetInput();
+
+        Debug.Assert(data is not null);
 
         (int X, int Y) guardPosition = (0, 0);
 
@@ -56,7 +59,6 @@ public static class Program
                         break;
                 }
             }
-
         }
 
         // lets get a bit fancy with our rendering!
@@ -151,26 +153,6 @@ public static class Program
     const char guardMarker = '^';
 
     //Packed structure - lower 4 bits for markers, upper 4 bits for direction a guard is facing
-
-
-    public static string GetInput()
-    {
-        var challengeDay = Util.CurrentQuery.Name;
-        var dayNumber = challengeDay[^1];
-
-        //Skipping the oauth flow. Do it in browser and pull the full cookie into your environment variable as below
-        var cookieHeaderValue = Environment.GetEnvironmentVariable("AoC2024-FullCookie");
-
-        if (string.IsNullOrWhiteSpace(cookieHeaderValue))
-            "Can't continue unless you're logged in through your cookie".Dump("Error");
-
-        using var client = new HttpClient();
-
-        client.DefaultRequestHeaders.Add("Cookie", cookieHeaderValue);
-
-        return Util.Cache(() => client.GetStringAsync("https://adventofcode.com/2024/day/" + dayNumber + "/input").GetAwaiter().GetResult(), challengeDay, TimeSpan.FromDays(1));
-    }
-
     internal enum MapMarker : byte
     {
         Free = 0,
@@ -210,10 +192,10 @@ internal static object ToDump(object input)
             Program.MapMarker.Obstacle => Util.WithStyle("🚩", "font-size: 2ch; color: #FFFFFFA0"),
             Program.MapMarker.Traversed => Program.TraversalDirection(marker) switch
             {
-                Program.MapMarker.TraversingTop => Util.WithStyle("^", "color: #016064"),
+                Program.MapMarker.TraversingTop => Util.WithStyle("^", "color: #fbaed2"),
                 Program.MapMarker.TraversingRight => Util.WithStyle(">️", "color: #63c5da"),
-                Program.MapMarker.TraversingBottom => Util.WithStyle("V", "color: #1f456E"),
-                Program.MapMarker.TraversingLeft => Util.WithStyle("<️", "color: #0492c2"),
+                Program.MapMarker.TraversingBottom => Util.WithStyle("V", "color: #cf71af"),
+                Program.MapMarker.TraversingLeft => Util.WithStyle("<️", "color: #b6c699"),
                 var x => x
             },
             Program.MapMarker.Guard => Util.WithStyle("👮", "font-size: 2ch;"),

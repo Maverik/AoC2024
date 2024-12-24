@@ -10,11 +10,13 @@
     SPDX-FileCopyrightText: ©️ 2024 Maverik <http://github.com/Maverik>
 */
 
+#load ".\AoC2024"
+
 public static class Program
 {
     public static void Main()
     {
-        var data = GetInput();
+        var data = AoC2024.GetInput();
 
         var input = data.Replace("\r\n", "\n").Append('\n').ToArray();
         var strideLength = Array.IndexOf(input, '\n') + 1;

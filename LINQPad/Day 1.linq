@@ -9,11 +9,13 @@
     SPDX-FileCopyrightText: ©️ 2024 Maverik <http://github.com/Maverik>
 */
 
+#load ".\AoC2024"
+
 public static class Program
 {
     public static void Main()
     {
-        var data = GetInput();
+        var data = AoC2024.GetInput();
 
         var parsedLists = data.Split('\n', StringSplitOptions.RemoveEmptyEntries)
             .Select(x => x.Split(' ', StringSplitOptions.RemoveEmptyEntries))
@@ -31,23 +33,5 @@ public static class Program
             .GroupJoin(parsedLists.Rights, x => x, x => x, (left, rights) => left * rights.Count())
             .Sum()
             .Dump("Similarity Score");
-    }
-
-    public static string GetInput()
-    {
-        var challengeDay = Util.CurrentQuery.Name;
-        var dayNumber = challengeDay[^1];
-
-        //Skipping the oauth flow. Do it in browser and pull the full cookie into your environment variable as below
-        var cookieHeaderValue = Environment.GetEnvironmentVariable("AoC2024-FullCookie");
-
-        if (string.IsNullOrWhiteSpace(cookieHeaderValue))
-            "Can't continue unless you're logged in through your cookie".Dump("Error");
-
-        using var client = new HttpClient();
-
-        client.DefaultRequestHeaders.Add("Cookie", cookieHeaderValue);
-
-        return Util.Cache(() => client.GetStringAsync("https://adventofcode.com/2024/day/" + dayNumber + "/input").GetAwaiter().GetResult(), challengeDay, TimeSpan.FromDays(1));
     }
 }

@@ -12,11 +12,13 @@
     SPDX-FileCopyrightText: ©️ 2024 Maverik <http://github.com/Maverik>
 */
 
+#load ".\AoC2024"
+
 public static class Program
 {
     public static void Main()
     {
-        var data = GetInput();
+        var data = AoC2024.GetInput();
 
         var priorities = new Dictionary<byte, PriorityNumber<byte>>();
 
